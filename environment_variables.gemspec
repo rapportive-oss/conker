@@ -10,4 +10,5 @@ Gem::Specification.new do |s|
   s.files = `git ls-files`.split("\n")
   s.require_paths = %w(lib)
   s.add_dependency 'activesupport'
+  s.add_dependency 'addressable'
 end
