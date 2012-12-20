@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'environment_variables'
-  s.authors = ['Rapportive Inc']
+  s.authors = ['Sam Stokes', 'Conrad Irwin', 'Lee Mallabone', 'Martin Kleppmann']
   s.email = 'supportive@rapportive.com'
   s.version = '0.10.1'
   s.summary = %q{Environment variables.} # TODO
