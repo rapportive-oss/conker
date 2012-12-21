@@ -3,7 +3,10 @@ require 'active_support/core_ext/hash/keys'
 require 'active_support/core_ext/hash/reverse_merge'
 require 'addressable/uri'
 
-# Example use: setup_environment!(Rails.env, :A_SECRET => api_credential)
+# Example use:
+#     module Conker
+#       setup_environment!(Rails.env, :A_SECRET => api_credential)
+#     end
 module Conker
   ENVIRONMENTS = %w(production development test)
   DUMMY_API_KEY = 'dummy_api_key'.freeze
