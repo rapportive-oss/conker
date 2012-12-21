@@ -5,7 +5,7 @@ require 'addressable/uri'
 
 # Example use:
 #     module Conker
-#       setup_environment!(Rails.env, :A_SECRET => api_credential)
+#       setup_config!(Rails.env, :A_SECRET => api_credential)
 #     end
 module Conker
   ENVIRONMENTS = %w(production development test)
@@ -26,7 +26,7 @@ module Conker
 
   class << self
     # Parse a multi-key hash into globals and raise an informative error message on failure.
-    def setup_environment!(current_env, hash)
+    def setup_config!(current_env, hash)
       errors = []
       hash.each do |varname, declaration|
         begin
@@ -42,12 +42,12 @@ module Conker
       raise Error, error_message unless errors.empty?
     end
 
-    # A wrapper around setup_environment! that uses ENV["RACK_ENV"] || 'development'
+    # A wrapper around setup_config! that uses ENV["RACK_ENV"] || 'development'
     def setup_rack_environment!(hash)
       ENV["RACK_ENV"] ||= 'development'
 
-      setup_environment!(ENV["RACK_ENV"],
-                         hash.merge(:RACK_ENV => required_in_production(:development => 'development', :test => 'test')))
+      setup_config!(ENV["RACK_ENV"],
+                    hash.merge(:RACK_ENV => required_in_production(:development => 'development', :test => 'test')))
     end
 
     # Declare an environment variable that is required to be defined in the
@@ -115,7 +115,7 @@ module Conker
       @environment = current_environment
       check_missing_value! varname
       check_missing_default!
-      from_environment_variable_or_default(varname)
+      from_config_variable_or_default(varname)
     end
 
     private
@@ -134,7 +134,7 @@ module Conker
       end
     end
 
-    def from_environment_variable_or_default(varname)
+    def from_config_variable_or_default(varname)
       if ENV[varname] && @environment != 'test'
         interpret_value(ENV[varname], @declaration_opts[:type])
       else

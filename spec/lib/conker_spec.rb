@@ -21,9 +21,9 @@ describe Conker do
   describe 'basic usage' do
     def setup!(env = :development)
       Conker.module_eval do
-        setup_environment! env,
-                           A_SECRET: api_credential(development: nil),
-                           PORT: required_in_production(type: :integer, default: 42)
+        setup_config! env,
+                      A_SECRET: api_credential(development: nil),
+                      PORT: required_in_production(type: :integer, default: 42)
       end
     end
 
