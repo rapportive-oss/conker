@@ -1,3 +1,7 @@
+require 'active_support/core_ext/hash/indifferent_access'
+require 'active_support/core_ext/hash/keys'
+require 'active_support/core_ext/hash/reverse_merge'
+
 # Example use: setup_environment!(Rails.env, :A_SECRET => api_credential)
 module EnvironmentVariables
   ENVIRONMENTS = %w(production development test)
