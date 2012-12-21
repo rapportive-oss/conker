@@ -18,9 +18,9 @@ describe Conker do
   end
 
   describe 'basic usage' do
-    def setup!
+    def setup!(env = :development)
       Conker.module_eval do
-        setup_environment! :development,
+        setup_environment! env,
                            A_SECRET: api_credential(development: nil),
                            PORT: required_in_production(type: :integer, default: 42)
       end
@@ -42,6 +42,12 @@ describe Conker do
       ENV['A_SECRET'] = 'beefbeefbeefbeef'
       setup!
       ::A_SECRET.should == 'beef' * 4
+    end
+
+    it 'throws useful errors if required variables are missing' do
+      ENV['A_SECRET'].should be_nil
+      ENV['PORT'] = '42'
+      expect { setup! :production }.to raise_error(/A_SECRET/)
     end
   end
 end
