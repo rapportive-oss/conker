@@ -1,0 +1,4 @@
+Things to do.
+
+* Add a "required" declaration (required in all environments)
+* Consider rejecting unexpected keys (i.e. typo-checking) for the hash case

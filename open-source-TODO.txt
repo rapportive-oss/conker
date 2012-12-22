@@ -1,0 +1,9 @@
+Things to do before we open source this.
+
+* Stop using active_support/core_ext (forces them on users)
+* Remove the not-very-general use-case-specific declarations (redis_url,
+  api_credential), e.g. move them back into rapportive_ruby
+* Improve summary and description in gemspec
+* Improve rubydocs
+* blog post
+* README
