@@ -30,7 +30,7 @@ module Conker
       errors = []
       hash.each do |varname, declaration|
         begin
-          Kernel.const_set(varname, declaration.evaluate(current_env, varname.to_s))
+          Kernel.const_set(varname, declaration.evaluate(current_env, ENV, varname.to_s))
         rescue => error
           errors << [varname, error.message]
         end
@@ -111,8 +111,9 @@ module Conker
       @declaration_opts = declaration_opts.with_indifferent_access
     end
 
-    def evaluate(current_environment, varname)
+    def evaluate(current_environment, config, varname)
       @environment = current_environment
+      @config = config
       check_missing_value! varname
       check_missing_default!
       from_config_variable_or_default(varname)
@@ -120,7 +121,7 @@ module Conker
 
     private
     def check_missing_value!(varname)
-      if required_in_environments.member?(@environment.to_sym) && !ENV[varname]
+      if required_in_environments.member?(@environment.to_sym) && !@config[varname]
         raise MustBeDefined
       end
     end
@@ -135,8 +136,8 @@ module Conker
     end
 
     def from_config_variable_or_default(varname)
-      if ENV[varname] && @environment != 'test'
-        interpret_value(ENV[varname], @declaration_opts[:type])
+      if @config[varname] && @environment != 'test'
+        interpret_value(@config[varname], @declaration_opts[:type])
       else
         default_value
       end
