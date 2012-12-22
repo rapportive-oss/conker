@@ -1,0 +1,2 @@
+# An actually empty file isn't valid YAML, so this file is just very unhelpful.
+dummy_value_that_nobody_could_possibly_care_about: 42

@@ -29,7 +29,11 @@ module Conker
     # Parse a multi-key hash into globals and raise an informative error message on failure.
     def setup_config!(current_env, *args)
       hash = args.extract_options!
-      config = args[0] || ENV
+      config = case args[0]
+               when Hash; args[0]
+               when String; require 'yaml'; YAML.parse_file(args[0]).to_ruby
+               else; ENV
+               end
 
       errors = []
       hash.each do |varname, declaration|

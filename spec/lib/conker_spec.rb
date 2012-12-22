@@ -273,4 +273,49 @@ describe Conker do
       end
     end
   end
+
+
+  describe 'reading config from a YAML file' do
+    def fixture(filename)
+      File.join(File.dirname(__FILE__), '..', 'fixtures', filename)
+    end
+
+    describe 'basic usage' do
+      def setup!(env = :development, filename = 'empty.yml')
+        fixture_path = fixture(filename)
+        Conker.module_eval do
+          setup_config! env, fixture_path,
+                        A_SECRET: api_credential(development: nil),
+                        PORT: required_in_production(type: :integer, default: 42)
+        end
+      end
+
+      it 'exposes declared variables as top-level constants' do
+        setup!
+        ::A_SECRET.should be_nil
+        ::PORT.should == 42
+      end
+
+      it 'lets values in the file override defaults' do
+        setup! :development, 'port_3000.yml'
+        ::PORT.should == 3000
+      end
+
+      it 'ignores environment variables' do
+        ENV['A_SECRET'] = 'beefbeefbeefbeef'
+        begin setup! ensure ENV.delete('A_SECRET') end
+        ::A_SECRET.should be_nil
+      end
+
+      it 'does not turn random environment variables into constants' do
+        ENV['PATH'].should_not be_empty
+        setup!
+        expect { ::PATH }.to raise_error(NameError, /PATH/)
+      end
+
+      it 'throws useful errors if required variables are missing' do
+        expect { setup! :production, 'port_3000.yml' }.to raise_error(/A_SECRET/)
+      end
+    end
+  end
 end
