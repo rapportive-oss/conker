@@ -1,3 +1,4 @@
+require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/hash/keys'
 require 'active_support/core_ext/hash/reverse_merge'
@@ -26,11 +27,14 @@ module Conker
 
   class << self
     # Parse a multi-key hash into globals and raise an informative error message on failure.
-    def setup_config!(current_env, hash)
+    def setup_config!(current_env, *args)
+      hash = args.extract_options!
+      config = args[0] || ENV
+
       errors = []
       hash.each do |varname, declaration|
         begin
-          Kernel.const_set(varname, declaration.evaluate(current_env, ENV, varname.to_s))
+          Kernel.const_set(varname, declaration.evaluate(current_env, config, varname.to_s))
         rescue => error
           errors << [varname, error.message]
         end
