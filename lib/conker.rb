@@ -4,9 +4,19 @@ require 'active_support/core_ext/hash/keys'
 require 'active_support/core_ext/hash/reverse_merge'
 require 'addressable/uri'
 
-# Example use:
+# Example that uses the process's environment:
 #     module Conker
 #       setup_config!(Rails.env, :A_SECRET => api_credential)
+#     end
+#
+# Example that uses a supplied hash of values:
+#     module Conker
+#       setup_config!(Rails.env, {:A_SECRET => 'very_secret'}, :A_SECRET => api_credential)
+#     end
+#
+# Example that reads values from a YAML filename:
+#     module Conker
+#       setup_config!(Rails.env, 'config_values.yml', :A_SECRET => api_credential)
 #     end
 module Conker
   ENVIRONMENTS = %w(production development test)
