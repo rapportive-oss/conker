@@ -6,6 +6,7 @@ Gem::Specification.new do |s|
   s.summary = %q{Conker will conquer your config.}
   s.description = "Configuration library."
   s.homepage = "https://github.com/rapportive/conker"
+  s.license = 'MIT'
   s.date = Date.today.to_s
   s.files = `git ls-files`.split("\n")
   s.require_paths = %w(lib)
