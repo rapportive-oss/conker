@@ -9,12 +9,15 @@ require 'addressable/uri'
 #       setup_config!(Rails.env, :A_SECRET => api_credential)
 #     end
 #
-# Example that uses a supplied hash of values:
+# Example that uses a supplied hash of values (e.g. read from some file or
+# database):
+#     config_values = {:A_SECRET => 'very_secret'}
 #     module Conker
-#       setup_config!(Rails.env, {:A_SECRET => 'very_secret'}, :A_SECRET => api_credential)
+#       setup_config!(Rails.env, config_values, :A_SECRET => api_credential)
 #     end
 #
-# Example that reads values from a YAML filename:
+# For convenience, if your config file is YAML, you can supply the path
+# directly and Conker will load and parse the file:
 #     module Conker
 #       setup_config!(Rails.env, 'config_values.yml', :A_SECRET => api_credential)
 #     end
