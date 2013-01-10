@@ -1,11 +1,25 @@
+require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/hash/keys'
 require 'active_support/core_ext/hash/reverse_merge'
 require 'addressable/uri'
 
-# Example use:
+# Example that uses the process's environment:
 #     module Conker
 #       setup_config!(Rails.env, :A_SECRET => api_credential)
+#     end
+#
+# Example that uses a supplied hash of values (e.g. read from some file or
+# database):
+#     config_values = {:A_SECRET => 'very_secret'}
+#     module Conker
+#       setup_config!(Rails.env, config_values, :A_SECRET => api_credential)
+#     end
+#
+# For convenience, if your config file is YAML, you can supply the path
+# directly and Conker will load and parse the file:
+#     module Conker
+#       setup_config!(Rails.env, 'config_values.yml', :A_SECRET => api_credential)
 #     end
 module Conker
   ENVIRONMENTS = %w(production development test)
@@ -26,11 +40,18 @@ module Conker
 
   class << self
     # Parse a multi-key hash into globals and raise an informative error message on failure.
-    def setup_config!(current_env, hash)
+    def setup_config!(current_env, *args)
+      hash = args.extract_options!
+      config = case args[0]
+               when Hash; args[0]
+               when String; require 'yaml'; YAML.parse_file(args[0]).to_ruby
+               else; ENV
+               end
+
       errors = []
       hash.each do |varname, declaration|
         begin
-          Kernel.const_set(varname, declaration.evaluate(current_env, varname.to_s))
+          Kernel.const_set(varname, declaration.evaluate(current_env, config, varname.to_s))
         rescue => error
           errors << [varname, error.message]
         end
@@ -111,8 +132,9 @@ module Conker
       @declaration_opts = declaration_opts.with_indifferent_access
     end
 
-    def evaluate(current_environment, varname)
+    def evaluate(current_environment, config, varname)
       @environment = current_environment
+      @config = config
       check_missing_value! varname
       check_missing_default!
       from_config_variable_or_default(varname)
@@ -120,7 +142,7 @@ module Conker
 
     private
     def check_missing_value!(varname)
-      if required_in_environments.member?(@environment.to_sym) && !ENV[varname]
+      if required_in_environments.member?(@environment.to_sym) && !@config[varname]
         raise MustBeDefined
       end
     end
@@ -135,8 +157,8 @@ module Conker
     end
 
     def from_config_variable_or_default(varname)
-      if ENV[varname] && @environment != 'test'
-        interpret_value(ENV[varname], @declaration_opts[:type])
+      if @config[varname] && @environment != 'test'
+        interpret_value(@config[varname], @declaration_opts[:type])
       else
         default_value
       end
