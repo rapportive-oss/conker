@@ -41,34 +41,35 @@ module Conker
   class << self
     # Parse a multi-key hash into globals and raise an informative error message on failure.
     def setup_config!(current_env, *args)
-      hash = args.extract_options!
-      config = case args[0]
-               when Hash; args[0]
-               when String; require 'yaml'; YAML.parse_file(args[0]).to_ruby
-               else; ENV
-               end
+      declarations = args.extract_options!
+      values = values_hash(args[0])
 
-      errors = []
-      hash.each do |varname, declaration|
-        begin
-          Kernel.const_set(varname, declaration.evaluate(current_env, config, varname.to_s))
-        rescue => error
-          errors << [varname, error.message]
-        end
-      end
-
-      error_message = errors.sort_by {|v, e| v.to_s }.map do |varname, error|
-        varname.to_s + ': ' + error
-      end.join(", ")
-      raise Error, error_message unless errors.empty?
+      setup_constants(current_env, declarations, values)
     end
 
-    # A wrapper around setup_config! that uses ENV["RACK_ENV"] || 'development'
-    def setup_rack_environment!(hash)
-      ENV["RACK_ENV"] ||= 'development'
+    # Like setup_config! but uses ENV['RACK_ENV'] || 'development' as the
+    # environment.  Also sets constant RACK_ENV.
+    #
+    # N.B. if using this method, you don't need to specify :RACK_ENV in your
+    # variable declarations, and it will complain if you do.  This is partly to
+    # make clear that this method *won't* read RACK_ENV from your config file,
+    # only from the environment variable, for compatibility with other code
+    # (e.g. Sinatra) that depends directly on the environment variable.
+    def setup_rack_environment!(*args)
+      ENV['RACK_ENV'] ||= 'development'
+      set_constant(:RACK_ENV, ENV['RACK_ENV'])
 
-      setup_config!(ENV["RACK_ENV"],
-                    hash.merge(:RACK_ENV => required_in_production(:development => 'development', :test => 'test')))
+      declarations = args.extract_options!
+      values = values_hash(args[0])
+
+      if declarations.key?('RACK_ENV') || declarations.key?(:RACK_ENV)
+        raise Error, "No need to declare RACK_ENV; please remove it to avoid confusion!"
+      end
+      if ENV.key?('RACK_ENV') && values.key?('RACK_ENV') && (env = ENV['RACK_ENV']) != (conf = values['RACK_ENV'])
+        raise "RACK_ENV differs between environment (#{env}) and config (#{conf})!  Please remove it from your config."
+      end
+
+      setup_constants(ENV['RACK_ENV'], declarations, values)
     end
 
     # Declare an environment variable that is required to be defined in the
@@ -122,6 +123,35 @@ module Conker
     # :production, :test and :development.
     def optional(declaration_opts = {})
       VariableDeclaration.new(declaration_opts)
+    end
+
+    private
+    def values_hash(values)
+      case values
+      when Hash; values
+      when String; require 'yaml'; YAML.parse_file(values).to_ruby
+      else; ENV
+      end
+    end
+
+    def setup_constants(current_env, declarations, values)
+      errors = []
+      declarations.each do |varname, declaration|
+        begin
+          set_constant(varname, declaration.evaluate(current_env, values, varname.to_s))
+        rescue => error
+          errors << [varname, error.message]
+        end
+      end
+
+      error_message = errors.sort_by {|v, e| v.to_s }.map do |varname, error|
+        varname.to_s + ': ' + error
+      end.join(", ")
+      raise Error, error_message unless errors.empty?
+    end
+
+    def set_constant(varname, value)
+      Kernel.const_set(varname, value)
     end
   end
 
