@@ -42,25 +42,9 @@ module Conker
     # Parse a multi-key hash into globals and raise an informative error message on failure.
     def setup_config!(current_env, *args)
       declarations = args.extract_options!
-      values = case args[0]
-               when Hash; args[0]
-               when String; require 'yaml'; YAML.parse_file(args[0]).to_ruby
-               else; ENV
-               end
+      values = values_hash(args[0])
 
-      errors = []
-      declarations.each do |varname, declaration|
-        begin
-          set_constant(varname, declaration.evaluate(current_env, values, varname.to_s))
-        rescue => error
-          errors << [varname, error.message]
-        end
-      end
-
-      error_message = errors.sort_by {|v, e| v.to_s }.map do |varname, error|
-        varname.to_s + ': ' + error
-      end.join(", ")
-      raise Error, error_message unless errors.empty?
+      setup_constants(current_env, declarations, values)
     end
 
     # Like setup_config! but uses ENV['RACK_ENV'] || 'development' as the
@@ -126,6 +110,30 @@ module Conker
     end
 
     private
+    def values_hash(values)
+      case values
+      when Hash; values
+      when String; require 'yaml'; YAML.parse_file(values).to_ruby
+      else; ENV
+      end
+    end
+
+    def setup_constants(current_env, declarations, values)
+      errors = []
+      declarations.each do |varname, declaration|
+        begin
+          set_constant(varname, declaration.evaluate(current_env, values, varname.to_s))
+        rescue => error
+          errors << [varname, error.message]
+        end
+      end
+
+      error_message = errors.sort_by {|v, e| v.to_s }.map do |varname, error|
+        varname.to_s + ': ' + error
+      end.join(", ")
+      raise Error, error_message unless errors.empty?
+    end
+
     def set_constant(varname, value)
       Kernel.const_set(varname, value)
     end
