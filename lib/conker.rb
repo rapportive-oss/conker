@@ -49,11 +49,15 @@ module Conker
 
     # Like setup_config! but uses ENV['RACK_ENV'] || 'development' as the
     # environment.  Also sets constant RACK_ENV.
-    def setup_rack_environment!(declarations)
+    def setup_rack_environment!(*args)
       ENV['RACK_ENV'] ||= 'development'
 
-      setup_config!(ENV['RACK_ENV'],
-                    declarations.merge(:RACK_ENV => required_in_production(:development => 'development', :test => 'test')))
+      declarations = args.extract_options!
+      values = values_hash(args[0])
+
+      setup_constants(ENV['RACK_ENV'],
+                    declarations.merge(:RACK_ENV => required_in_production(:development => 'development', :test => 'test')),
+                     values)
     end
 
     # Declare an environment variable that is required to be defined in the
