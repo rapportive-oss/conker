@@ -63,11 +63,11 @@ module Conker
       raise Error, error_message unless errors.empty?
     end
 
-    # A wrapper around setup_config! that uses ENV["RACK_ENV"] || 'development'
+    # A wrapper around setup_config! that uses ENV['RACK_ENV'] || 'development'
     def setup_rack_environment!(hash)
-      ENV["RACK_ENV"] ||= 'development'
+      ENV['RACK_ENV'] ||= 'development'
 
-      setup_config!(ENV["RACK_ENV"],
+      setup_config!(ENV['RACK_ENV'],
                     hash.merge(:RACK_ENV => required_in_production(:development => 'development', :test => 'test')))
     end
 
