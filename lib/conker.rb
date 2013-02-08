@@ -49,15 +49,27 @@ module Conker
 
     # Like setup_config! but uses ENV['RACK_ENV'] || 'development' as the
     # environment.  Also sets constant RACK_ENV.
+    #
+    # N.B. if using this method, you don't need to specify :RACK_ENV in your
+    # variable declarations, and it will complain if you do.  This is partly to
+    # make clear that this method *won't* read RACK_ENV from your config file,
+    # only from the environment variable, for compatibility with other code
+    # (e.g. Sinatra) that depends directly on the environment variable.
     def setup_rack_environment!(*args)
       ENV['RACK_ENV'] ||= 'development'
+      set_constant(:RACK_ENV, ENV['RACK_ENV'])
 
       declarations = args.extract_options!
       values = values_hash(args[0])
 
-      setup_constants(ENV['RACK_ENV'],
-                    declarations.merge(:RACK_ENV => required_in_production(:development => 'development', :test => 'test')),
-                     values)
+      if declarations.key?('RACK_ENV') || declarations.key?(:RACK_ENV)
+        raise Error, "No need to declare RACK_ENV; please remove it to avoid confusion!"
+      end
+      if ENV.key?('RACK_ENV') && values.key?('RACK_ENV') && (env = ENV['RACK_ENV']) != (conf = values['RACK_ENV'])
+        raise "RACK_ENV differs between environment (#{env}) and config (#{conf})!  Please remove it from your config."
+      end
+
+      setup_constants(ENV['RACK_ENV'], declarations, values)
     end
 
     # Declare an environment variable that is required to be defined in the
