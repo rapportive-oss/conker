@@ -58,6 +58,7 @@ module Conker
     def setup_rack_environment!(*args)
       ENV['RACK_ENV'] ||= 'development'
       set_constant(:RACK_ENV, ENV['RACK_ENV'])
+      current_env = get_constant(:RACK_ENV)
 
       declarations = args.extract_options!
       values = values_hash(args[0])
@@ -69,7 +70,7 @@ module Conker
         raise "RACK_ENV differs between environment (#{env}) and config (#{conf})!  Please remove it from your config."
       end
 
-      setup_constants(ENV['RACK_ENV'], declarations, values)
+      setup_constants(current_env, declarations, values)
     end
 
     # Declare an environment variable that is required to be defined in the
@@ -152,6 +153,10 @@ module Conker
 
     def set_constant(varname, value)
       Kernel.const_set(varname, value)
+    end
+
+    def get_constant(varname)
+      Kernel.const_get(varname)
     end
   end
 
