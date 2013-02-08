@@ -42,7 +42,7 @@ module Conker
     # Parse a multi-key hash into globals and raise an informative error message on failure.
     def setup_config!(current_env, *args)
       declarations = args.extract_options!
-      values = values_hash(args[0])
+      values = values_hash(current_env, args[0])
 
       setup_constants(current_env, declarations, values)
     end
@@ -61,7 +61,7 @@ module Conker
       current_env = get_constant(:RACK_ENV)
 
       declarations = args.extract_options!
-      values = values_hash(args[0])
+      values = values_hash(current_env, args[0])
 
       if declarations.key?('RACK_ENV') || declarations.key?(:RACK_ENV)
         raise Error, "No need to declare RACK_ENV; please remove it to avoid confusion!"
@@ -127,10 +127,18 @@ module Conker
     end
 
     private
-    def values_hash(values)
+    def values_hash(current_env, values)
       case values
       when Hash; values
-      when String; require 'yaml'; YAML.parse_file(values).to_ruby
+      when String
+        if File.exist?(values)
+          require 'yaml'
+          YAML.parse_file(values).to_ruby
+        elsif 'production' == current_env.to_s
+          raise Error, "Missing config file #{values}"
+        else
+          {}
+        end
       else; ENV
       end
     end
