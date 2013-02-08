@@ -51,7 +51,7 @@ module Conker
       errors = []
       hash.each do |varname, declaration|
         begin
-          Kernel.const_set(varname, declaration.evaluate(current_env, config, varname.to_s))
+          set_constant(varname, declaration.evaluate(current_env, config, varname.to_s))
         rescue => error
           errors << [varname, error.message]
         end
@@ -122,6 +122,11 @@ module Conker
     # :production, :test and :development.
     def optional(declaration_opts = {})
       VariableDeclaration.new(declaration_opts)
+    end
+
+    private
+    def set_constant(varname, value)
+      Kernel.const_set(varname, value)
     end
   end
 
