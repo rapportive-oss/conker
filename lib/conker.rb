@@ -41,17 +41,17 @@ module Conker
   class << self
     # Parse a multi-key hash into globals and raise an informative error message on failure.
     def setup_config!(current_env, *args)
-      hash = args.extract_options!
-      config = case args[0]
+      declarations = args.extract_options!
+      values = case args[0]
                when Hash; args[0]
                when String; require 'yaml'; YAML.parse_file(args[0]).to_ruby
                else; ENV
                end
 
       errors = []
-      hash.each do |varname, declaration|
+      declarations.each do |varname, declaration|
         begin
-          set_constant(varname, declaration.evaluate(current_env, config, varname.to_s))
+          set_constant(varname, declaration.evaluate(current_env, values, varname.to_s))
         rescue => error
           errors << [varname, error.message]
         end
