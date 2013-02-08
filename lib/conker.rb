@@ -63,7 +63,8 @@ module Conker
       raise Error, error_message unless errors.empty?
     end
 
-    # A wrapper around setup_config! that uses ENV['RACK_ENV'] || 'development'
+    # Like setup_config! but uses ENV['RACK_ENV'] || 'development' as the
+    # environment.  Also sets constant RACK_ENV.
     def setup_rack_environment!(hash)
       ENV['RACK_ENV'] ||= 'development'
 
