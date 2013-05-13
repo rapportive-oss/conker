@@ -1,5 +1,5 @@
 require 'active_support/core_ext/hash/indifferent_access'
-
+$:.unshift File.expand_path("../../lib", __FILE__)
 require 'conker'
 
 describe Conker do
