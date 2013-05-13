@@ -242,10 +242,20 @@ module Conker
         raise MustBeDefined if value.nil? # there's nothing sensible to default to
         require 'addressable' unless defined? Addressable
         Addressable::URI.parse(value.to_s)
-      when :ip
+      when :ip_address
         raise MustBeDefined if value.nil? # there's nothing sensible to default to
         require 'ipaddr' unless defined? IPAddr
         IPAddr.new(value.to_s)
+      when :ip_range
+        raise MustBeDefined if value.nil? # there's nothing sensible to default to
+        require 'ipaddr' unless defined? IPAddr
+
+        # Support <from>..<to> for ranges that cannot be specified with CIDR easily.
+        if value =~ /\A(.*)\.\.(.*)\z/
+          IPAddr.new($1) .. IPAddr.new($2)
+        else
+          IPAddr.new(value.to_s).to_range
+        end
       when :timestamp
         raise MustBeDefined if value.nil? # there's nothing sensible to default to.
         Time.iso8601(value.to_s).utc
