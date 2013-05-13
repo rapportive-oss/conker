@@ -15,6 +15,24 @@ describe Conker do
     end
   end
 
+  describe 'type: :ip' do
+    it 'should parse IP addresses' do
+      Conker.module_eval do
+        setup_config! :development, {"IP_ADDR" => "172.17.16.15"},
+                      IP_ADDR: optional(type: :ip, default: nil)
+      end
+      ::IP_ADDR.should == IPAddr.new("172.17.16.15")
+    end
+
+    it 'should parse CIDR ranges' do
+      Conker.module_eval do
+        setup_config! :development, {"IP_RANGE" => "172.17.16.0/24"},
+                      IP_RANGE: optional(type: :ip, default: nil)
+
+      end
+      ::IP_RANGE.should include IPAddr.new("172.17.16.15")
+    end
+  end
 
   describe 'reading config from a hash' do
     describe 'basic usage' do
