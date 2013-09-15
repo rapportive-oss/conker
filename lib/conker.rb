@@ -118,6 +118,15 @@ module Conker
       }.merge(opts))
     end
 
+    # A couchbase_url is required_in_production with development defaulting to
+    # localhost/default and test defaulting to localhost/test.
+    def couchbase_url(opts = {})
+      required_in_production({
+        :development => 'http://localhost:8091/pools/default/buckets/default',
+        :test => 'http://localhost:8091/pools/default/buckets/test',
+      }.merge(opts))
+    end
+
     # Declare an environment variable, defaulting to other values if not defined.
     #
     # You must either specify a :default, or specify defaults for each of
