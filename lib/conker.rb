@@ -271,6 +271,8 @@ module Conker
       when :string, nil
         value.to_s
         # defaults to '' if omitted
+      when :hash
+        value
       else
         raise UnknownType, type.to_s
       end
