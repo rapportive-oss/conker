@@ -36,6 +36,7 @@ module Conker
   class MissingDefault < Error
     def initialize; super("missing default value"); end
   end
+  class IncompatibleType < Error; end
 
 
   class << self
@@ -272,6 +273,9 @@ module Conker
         value.to_s
         # defaults to '' if omitted
       when :hash
+        unless value.is_a? Hash
+          raise IncompatibleType, "wanted a Hash, got #{value.class}"
+        end
         value
       else
         raise UnknownType, type.to_s
