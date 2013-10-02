@@ -1,0 +1,4 @@
+CERTIFICATES:
+  :foobar1: 'a'
+  foobar2:  'b'
+  'foobar3': 'c'

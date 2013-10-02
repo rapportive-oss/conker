@@ -7,6 +7,10 @@ describe Conker do
     @constants = Kernel.constants
   end
 
+  def fixture(filename)
+    File.join(File.dirname(__FILE__), '..', 'fixtures', filename)
+  end
+
   after :each do
     # Don't need to worry about changing (rather than adding) constants,
     # because Ruby will whinge if we do that.
@@ -42,6 +46,31 @@ describe Conker do
 
       end
       ::IP_RANGE.should include IPAddr.new("172.17.16.128")
+    end
+  end
+
+  describe 'type: :hash' do
+    before do
+      fixture_path = fixture('hash.yml')
+      Conker.module_eval do
+        setup_config! :development, fixture_path,
+                      CERTIFICATES: optional(type: :hash, default: {})
+      end
+    end
+
+    it 'should allow indifferent access to symbols' do
+      ::CERTIFICATES[:foobar1].should == 'a'
+      ::CERTIFICATES['foobar1'].should == 'a'
+    end
+
+    it 'should allow indifferent access to strings' do
+      ::CERTIFICATES[:foobar2].should == 'b'
+      ::CERTIFICATES['foobar2'].should == 'b'
+    end
+
+    it 'should allow indifferent access to string that look like symbols' do
+      ::CERTIFICATES[:foobar3].should == 'c'
+      ::CERTIFICATES['foobar3'].should == 'c'
     end
   end
 
@@ -305,10 +334,6 @@ describe Conker do
 
 
   describe 'reading config from a YAML file' do
-    def fixture(filename)
-      File.join(File.dirname(__FILE__), '..', 'fixtures', filename)
-    end
-
     describe 'basic usage' do
       def setup!(env = :development, filename = 'empty.yml')
         fixture_path = fixture(filename)

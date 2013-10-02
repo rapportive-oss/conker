@@ -276,7 +276,7 @@ module Conker
         unless value.is_a? Hash
           raise IncompatibleType, "wanted a Hash, got #{value.class}"
         end
-        value
+        value.with_indifferent_access
       else
         raise UnknownType, type.to_s
       end
