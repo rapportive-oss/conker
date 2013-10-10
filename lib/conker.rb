@@ -181,7 +181,10 @@ module Conker
 
   class VariableDeclaration
     def initialize(declaration_opts)
-      declaration_opts.assert_valid_keys :required_in, :type, :default, *ENVIRONMENTS.map(&:to_sym)
+      declaration_opts.assert_valid_keys :required_in, :type, :default, *ENVIRONMENTS.map(&:to_sym), :delimiter
+      if declaration_opts.key?(:delimiter) && declaration_opts[:type] != :array
+        raise "Unknown key :delimiter for type :#{declaration_opts[:type] || :string}.  Did you mean :type => :array?"
+      end
       @declaration_opts = declaration_opts.with_indifferent_access
     end
 
@@ -277,6 +280,23 @@ module Conker
           raise IncompatibleType, "wanted a Hash, got #{value.class}"
         end
         value.with_indifferent_access
+      when :array
+        if delimiter = @declaration_opts[:delimiter]
+          # e.g. ENV['WIDGET'] = 'foo:bar:baz' # yields ['foo', 'bar', 'baz']
+          if value.is_a? String
+            value.split(delimiter)
+          else
+            raise IncompatibleType, "wanted a String to parse :array with :delimiter, got #{value.class}"
+          end
+        else
+          # e.g.
+          #   WIDGET: foo # yields WIDGET = ['foo']
+          #   WIDGET:
+          #     - bar
+          #     - baz
+          #    # yields WIDGET = ['foo', 'bar']
+          Array(value)
+        end
       else
         raise UnknownType, type.to_s
       end
