@@ -176,10 +176,10 @@ describe Conker do
 
     describe 'typed variables' do
       describe 'boolean' do
-        def setup_sprocket_enabled!(value_string)
+        def setup_sprocket_enabled!(value_string, default = false)
           Conker.module_eval do
             setup_config! :development, {'SPROCKET_ENABLED' => value_string},
-                          SPROCKET_ENABLED: optional(type: :boolean, default: false)
+                          SPROCKET_ENABLED: optional(type: :boolean, default: default)
           end
         end
 
@@ -200,6 +200,11 @@ describe Conker do
 
         it 'accepts "0" as false' do
           setup_sprocket_enabled! '0'
+          SPROCKET_ENABLED.should be_false
+        end
+
+        it 'handles a falsey value properly' do
+          setup_sprocket_enabled! false, true
           SPROCKET_ENABLED.should be_false
         end
       end
