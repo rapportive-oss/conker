@@ -198,7 +198,7 @@ module Conker
 
     private
     def check_missing_value!(varname)
-      if required_in_environments.member?(@environment.to_sym) && !@config[varname]
+      if required_in_environments.member?(@environment.to_sym) && @config[varname].nil?
         raise MustBeDefined
       end
     end
