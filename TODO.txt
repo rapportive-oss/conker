@@ -2,3 +2,5 @@ Things to do.
 
 * Add a "required" declaration (required in all environments)
 * Consider rejecting unexpected keys (i.e. typo-checking) for the hash case
+* Make the API less weird (shouldn't have to reopen the Conker module to use it)
+* Support namespaces (e.g. MyModule::NUM_WIDGETS vs ::NUM_WIDGETS)
