@@ -198,7 +198,7 @@ module Conker
 
     private
     def check_missing_value!(varname)
-      if required_in_environments.member?(@environment.to_sym) && !@config[varname]
+      if required_in_environments.member?(@environment.to_sym) && @config[varname].nil?
         raise MustBeDefined
       end
     end
@@ -213,7 +213,7 @@ module Conker
     end
 
     def from_config_variable_or_default(varname)
-      if @config[varname] && @environment != 'test'
+      if !@config[varname].nil? && @environment != 'test'
         interpret_value(@config[varname], @declaration_opts[:type])
       else
         default_value
@@ -239,7 +239,11 @@ module Conker
       type = type.to_sym if type
       case type
       when :boolean
-        value.to_s.downcase == "true" || value.to_i == 1
+        if [true, false].include? value
+          value
+        else
+          value.to_s.downcase == "true" || value.to_i == 1
+        end
         # defaults to false if omitted
       when :integer
         Integer(value)
